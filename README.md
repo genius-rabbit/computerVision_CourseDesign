@@ -2,9 +2,7 @@
 
 ## CourseDesign1
 
-### fileLists
+- 使用KNN对cifar10数据集进行分类
+- 使用hog特征对图片进行预处理，然后使用KNN进行分类
+- 使用hog特征对图片进行预处理，然后使用softmax进行分类
 
-- KNN.py：加载数据，设置交叉验证，测试模型
-- cross_validation.py：交叉验证
-- KNN_module.py：KNN模型
-- data_utils.py：加载数据，可选hog
