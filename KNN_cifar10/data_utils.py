@@ -5,10 +5,11 @@ from skimage import feature as ft
 from skimage import color
 
 
+# histogram of oriented gradient, 梯度方向直方图特征
 def hog_extraction(data):
     num = data.shape[0]
-    # 提取训练样本的HOG特征
     data1_hogfeature = []
+
     for i in range(num):
         img = data[i].reshape(32, 32, 3)
         gray = color.rgb2gray(img)
@@ -24,6 +25,25 @@ def hog_extraction(data):
     return data_hogfeature
 
 
+# LBP(local binary pattern)是一种用来描述图像局部纹理特征的算子
+def lbp_extraction(images_data, hist_size=256, lbp_radius=1, lbp_point=8):
+    n_images = images_data.shape[0]
+    hist = np.zeros((n_images, hist_size))
+
+    for i in np.arange(n_images):
+        img = images_data[i].reshape(32, 32, 3)
+        gray = color.rgb2gray(img)
+        gray_array = np.array(gray)
+
+        lbp = ft.local_binary_pattern(gray_array, lbp_point, lbp_radius, 'default')
+        # 统计图像的直方图
+        max_bins = int(lbp.max() + 1)
+        # hist size:256
+        hist[i], _ = np.histogram(lbp, bins=max_bins, range=(0, max_bins))
+
+    return hist
+
+
 def load_cifar_batch(filename):
     """ load single batch of cifar """
     print(filename)
@@ -36,7 +56,7 @@ def load_cifar_batch(filename):
         return X, Y
 
 
-def load_cifar10_data(root, use_hog):
+def load_cifar10_data(root, features):
     """ load all of cifar """
     xs = []
     ys = []
@@ -49,8 +69,13 @@ def load_cifar10_data(root, use_hog):
     Ytr = np.concatenate(ys)
     Xte, Yte = load_cifar_batch(os.path.join(root, 'test_batch'))
 
-    if use_hog:
+    if features == 'hog':
         print('use hog to get img feature')
         Xtr = hog_extraction(Xtr)
         Xte = hog_extraction(Xte)
+    elif features == 'lbp':
+        print('use lbp to get img feature')
+        Xtr = lbp_extraction(Xtr)
+        Xte = lbp_extraction(Xte)
     return Xtr, Ytr, Xte, Yte
+
