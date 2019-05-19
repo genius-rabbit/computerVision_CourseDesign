@@ -9,7 +9,7 @@ class SlowROIPool(nn.Module):
         self.maxpool = nn.AdaptiveMaxPool2d(output_size)
         self.size = output_size
 
-    def forward(self, images, rois, roi_idx):
+    def forward(self, images, rois):
         roi_num = rois.shape[0]
         h = images.size(2)
         w = images.size(3)

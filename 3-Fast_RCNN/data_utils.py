@@ -75,19 +75,14 @@ def data_load():
     x_img_tr = np.array(train_img_set_x).transpose((0, 3, 1, 2))
     y_img_tr = np.array(train_img_set_y)
     box_tr = np.array(train_box_set)
+    # print(box_tr)
     box_tr = box_tr / 128.
     x_img_te = np.array(test_img_set_x).transpose((0, 3, 1, 2))
     y_img_te = np.array(test_img_set_y)
     box_te = np.array(test_box_set)
     box_te = box_te / 128.
 
-    print('data set shape:')
-    print('train x: ', x_img_tr.shape, '\ttrain y: ', y_img_tr.shape, '\ttrain box: ', box_tr.shape)
-    print('test x: ', x_img_te.shape, '\ttest y: ', y_img_te.shape, '\ttest box: ', box_te.shape)
-    return x_img_tr, y_img_tr, box_tr, x_img_te, y_img_te, box_te
-
-
-'''
+    # random dataset
     randomIndices = random.sample(range(x_img_tr.shape[0]), x_img_tr.shape[0])
     x_img_tr = x_img_tr[randomIndices]
     y_img_tr = y_img_tr[randomIndices]
@@ -97,4 +92,27 @@ def data_load():
     x_img_te = x_img_te[randomIndices]
     y_img_te = y_img_te[randomIndices]
     box_te = box_te[randomIndices]
-'''
+
+    print('data set shape:')
+    print('train x: ', x_img_tr.shape, '\ttrain y: ', y_img_tr.shape, '\ttrain box: ', box_tr.shape)
+    print('test x: ', x_img_te.shape, '\ttest y: ', y_img_te.shape, '\ttest box: ', box_te.shape)
+    return x_img_tr, y_img_tr, box_tr, x_img_te, y_img_te, box_te
+
+
+def calc_ious(ex_rois, gt_rois):
+    ex_area = (1. + ex_rois[:, 2] - ex_rois[:, 0]) * (1. + ex_rois[:, 3] - ex_rois[:, 1])
+    gt_area = (1. + gt_rois[:, 2] - gt_rois[:, 0]) * (1. + gt_rois[:, 3] - gt_rois[:, 1])
+    area_sum = ex_area + gt_area
+
+    lb = np.maximum(ex_rois[:, 0], gt_rois[:, 0])
+    rb = np.minimum(ex_rois[:, 2], gt_rois[:, 2])
+    tb = np.maximum(ex_rois[:, 1], gt_rois[:, 1])
+    ub = np.minimum(ex_rois[:, 3], gt_rois[:, 3])
+
+    width = np.maximum(1. + rb - lb, 0.)
+    height = np.maximum(1. + ub - tb, 0.)
+    area_i = width * height
+    area_u = area_sum - area_i
+
+    ious = area_i / area_u
+    return ious.sum() / ex_rois.shape[0]
